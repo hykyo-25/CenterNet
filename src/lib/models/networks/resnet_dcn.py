@@ -15,7 +15,7 @@ import logging
 
 import torch
 import torch.nn as nn
-from .DCNv2.dcn_v2 import DCN
+from .DCNv2.DCN.dcn_v2 import DCN
 import torch.utils.model_zoo as model_zoo
 
 BN_MOMENTUM = 0.1
@@ -266,6 +266,7 @@ class PoseResNet(nn.Module):
         if 1:
             url = model_urls['resnet{}'.format(num_layers)]
             pretrained_state_dict = model_zoo.load_url(url)
+            print(pretrained_state_dict)
             print('=> loading pretrained model {}'.format(url))
             self.load_state_dict(pretrained_state_dict, strict=False)
             print('=> init deconv weights from normal distribution')

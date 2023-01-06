@@ -224,6 +224,9 @@ class opts(object):
     self.parser.add_argument('--eval_oracle_dep', action='store_true', 
                              help='use ground truth depth.')
 
+    self.parser.add_argument('--my_test', action='store_true', 
+                             help='change padding')
+
   def parse(self, args=''):
     if args == '':
       opt = self.parser.parse_args()
@@ -245,7 +248,10 @@ class opts(object):
 
     if opt.head_conv == -1: # init default head_conv
       opt.head_conv = 256 if 'dla' in opt.arch else 64
-    opt.pad = 127 if 'hourglass' in opt.arch else 31
+    if opt.my_test:
+      opt.pad = 127 if 'hourglass' in opt.arch else 255
+    else:
+      opt.pad = 127 if 'hourglass' in opt.arch else 31
     opt.num_stacks = 2 if opt.arch == 'hourglass' else 1
 
     if opt.trainval:
