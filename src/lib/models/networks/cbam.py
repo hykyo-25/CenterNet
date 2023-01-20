@@ -11,12 +11,6 @@ class BasicConv(nn.Module):
         self.bn = nn.BatchNorm2d(out_planes,eps=1e-5, momentum=0.01, affine=True) if bn else None
         self.relu = nn.ReLU() if relu else None
 
-        # nn.init.constant_(self.conv.weight, 1)
-        # nn.init.constant_(self.conv.bias, 0)
-        nn.init.constant_(self.bn.weight, 1)
-        nn.init.constant_(self.bn.bias, 0)
-        
-
     def forward(self, x):
         x = self.conv(x)
         if self.bn is not None:
@@ -88,16 +82,17 @@ class SpatialGate(nn.Module):
         return x * scale
 
 class CBAM(nn.Module):
-    def __init__(self):
+    def __init__(self, gate_channels, reduction_ratio=16, pool_types=['avg', 'max'], spatial=False, channel=False):
         super(CBAM, self).__init__()
-        # self.ChannelGate = ChannelGate(gate_channels, reduction_ratio, pool_types)
-        # self.no_spatial=no_spatial
-        # if not no_spatial:
-        #     self.SpatialGate = SpatialGate()
-        self.SpatialGate = SpatialGate()
+        self.spatial=spatial
+        self.channel=channel
+        if channel:
+            self.ChannelGate = ChannelGate(gate_channels, reduction_ratio, pool_types)
+        if spatial:
+            self.SpatialGate = SpatialGate()
     def forward(self, x):
-        # x_out = self.ChannelGate(x)
-        # if not self.no_spatial:
-        #     x_out = self.SpatialGate(x_out)
-        x = self.SpatialGate(x)
+        if self.channel:
+            x = self.ChannelGate(x)
+        if self.spatial:
+            x = self.SpatialGate(x)
         return x

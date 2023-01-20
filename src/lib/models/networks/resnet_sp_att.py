@@ -70,7 +70,7 @@ class BasicBlock(nn.Module):
 class BasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, use_cbam=False):
+    def __init__(self, inplanes, planes, stride=1, downsample=None, cbam_sp=False, cbam_ch=False):
         super(BasicBlock, self).__init__()
         self.conv1 = conv3x3(inplanes, planes, stride)
         self.bn1 = nn.BatchNorm2d(planes)
@@ -80,7 +80,7 @@ class BasicBlock(nn.Module):
         self.downsample = downsample
         self.stride = stride
 
-        self.cbam = CBAM()
+        self.cbam = CBAM(planes, 16, spatial=cbam_sp, channel=cbam_ch)
     
     def forward(self, x):
         residual = x
@@ -165,7 +165,7 @@ def fill_fc_weights(layers):
 
 class PoseResNet(nn.Module):
 
-    def __init__(self, block, layers, heads, head_conv):
+    def __init__(self, block, layers, heads, head_conv, cbam_sp=False, cbam_ch=False):
         self.inplanes = 64
         self.heads = heads
         self.deconv_with_bias = False
@@ -176,10 +176,10 @@ class PoseResNet(nn.Module):
         self.bn1 = nn.BatchNorm2d(64, momentum=BN_MOMENTUM)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        self.layer1 = self._make_layer(block, 64, layers[0])
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
+        self.layer1 = self._make_layer(block, 64, layers[0], cbam_sp=cbam_sp, cbam_ch=cbam_ch)
+        self.layer2 = self._make_layer(block, 128, layers[1], stride=2, cbam_sp=cbam_sp, cbam_ch=cbam_ch)
+        self.layer3 = self._make_layer(block, 256, layers[2], stride=2, cbam_sp=cbam_sp, cbam_ch=cbam_ch)
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=2, cbam_sp=cbam_sp, cbam_ch=cbam_ch)
 
         # used for deconv layers
         self.deconv_layers = self._make_deconv_layer(
@@ -212,7 +212,7 @@ class PoseResNet(nn.Module):
                     fill_fc_weights(fc)
             self.__setattr__(head, fc)
 
-    def _make_layer(self, block, planes, blocks, stride=1):
+    def _make_layer(self, block, planes, blocks, stride=1, cbam_sp=False, cbam_ch=False):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
@@ -222,10 +222,10 @@ class PoseResNet(nn.Module):
             )
 
         layers = []
-        layers.append(block(self.inplanes, planes, stride, downsample))
+        layers.append(block(self.inplanes, planes, stride, downsample, cbam_sp=cbam_sp, cbam_ch=cbam_ch))
         self.inplanes = planes * block.expansion
         for i in range(1, blocks):
-            layers.append(block(self.inplanes, planes))
+            layers.append(block(self.inplanes, planes, cbam_sp=cbam_sp, cbam_ch=cbam_ch))
 
         return nn.Sequential(*layers)
 
@@ -320,9 +320,9 @@ resnet_spec = {18: (BasicBlock, [2, 2, 2, 2]),
                152: (Bottleneck, [3, 8, 36, 3])}
 
 
-def get_pose_net(num_layers, heads, head_conv=256):
+def get_pose_net(num_layers, heads, head_conv=256, cbam_sp=False, cbam_ch=False):
   block_class, layers = resnet_spec[num_layers]
 
-  model = PoseResNet(block_class, layers, heads, head_conv=head_conv)
+  model = PoseResNet(block_class, layers, heads, head_conv=head_conv, cbam_sp=cbam_sp, cbam_ch=cbam_ch)
   model.init_weights(num_layers)
   return model

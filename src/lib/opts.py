@@ -226,6 +226,11 @@ class opts(object):
 
     self.parser.add_argument('--my_test', action='store_true', 
                              help='change padding')
+    self.parser.add_argument('--cbam_sp', action='store_true', 
+                             help='spacial att')
+    self.parser.add_argument('--cbam_ch', action='store_true', 
+                             help='channel att')
+    
 
   def parse(self, args=''):
     if args == '':
