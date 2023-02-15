@@ -1,4 +1,5 @@
 # MEMO
+- 動作環境の作成のログはinstall.txtに記載
 - このリポジトリでは、主にCenterNet\src\lib\models\networks内に変更を加えた
 - train.ipynb：学習用のノートブック
 - test.ipynb：検出精度を求めるノートブック
