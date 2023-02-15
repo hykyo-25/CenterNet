@@ -36,36 +36,36 @@ def conv3x3(in_planes, out_planes, stride=1):
                      padding=1, bias=False)
 
 
-class BasicBlock(nn.Module):
-    expansion = 1
+# class BasicBlock(nn.Module):
+#     expansion = 1
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None):
-        super(BasicBlock, self).__init__()
-        self.conv1 = conv3x3(inplanes, planes, stride)
-        self.bn1 = nn.BatchNorm2d(planes, momentum=BN_MOMENTUM)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv2 = conv3x3(planes, planes)
-        self.bn2 = nn.BatchNorm2d(planes, momentum=BN_MOMENTUM)
-        self.downsample = downsample
-        self.stride = stride
+#     def __init__(self, inplanes, planes, stride=1, downsample=None):
+#         super(BasicBlock, self).__init__()
+#         self.conv1 = conv3x3(inplanes, planes, stride)
+#         self.bn1 = nn.BatchNorm2d(planes, momentum=BN_MOMENTUM)
+#         self.relu = nn.ReLU(inplace=True)
+#         self.conv2 = conv3x3(planes, planes)
+#         self.bn2 = nn.BatchNorm2d(planes, momentum=BN_MOMENTUM)
+#         self.downsample = downsample
+#         self.stride = stride
 
-    def forward(self, x):
-        residual = x
+#     def forward(self, x):
+#         residual = x
 
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
+#         out = self.conv1(x)
+#         out = self.bn1(out)
+#         out = self.relu(out)
 
-        out = self.conv2(out)
-        out = self.bn2(out)
+#         out = self.conv2(out)
+#         out = self.bn2(out)
 
-        if self.downsample is not None:
-            residual = self.downsample(x)
+#         if self.downsample is not None:
+#             residual = self.downsample(x)
 
-        out += residual
-        out = self.relu(out)
+#         out += residual
+#         out = self.relu(out)
 
-        return out
+#         return out
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -80,6 +80,7 @@ class BasicBlock(nn.Module):
         self.downsample = downsample
         self.stride = stride
 
+        print(cbam_sp, cbam_ch)
         self.cbam = CBAM(planes, 16, spatial=cbam_sp, channel=cbam_ch)
     
     def forward(self, x):
@@ -303,7 +304,6 @@ class PoseResNet(nn.Module):
         if 1:
             url = model_urls['resnet{}'.format(num_layers)]
             pretrained_state_dict = model_zoo.load_url(url)
-            print(pretrained_state_dict)
             print('=> loading pretrained model {}'.format(url))
             self.load_state_dict(pretrained_state_dict, strict=False)
             print('=> init deconv weights from normal distribution')
@@ -322,7 +322,7 @@ resnet_spec = {18: (BasicBlock, [2, 2, 2, 2]),
 
 def get_pose_net(num_layers, heads, head_conv=256, cbam_sp=False, cbam_ch=False):
   block_class, layers = resnet_spec[num_layers]
-
+#   print(cbam_sp, cbam_ch)
   model = PoseResNet(block_class, layers, heads, head_conv=head_conv, cbam_sp=cbam_sp, cbam_ch=cbam_ch)
   model.init_weights(num_layers)
   return model
