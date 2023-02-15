@@ -13,12 +13,14 @@ pyenv local 3.8.4
 python -m venv .env
 source .env/bin/activate
 
+# pytorchはcuda環境にあわせてインストール
 pip install https://download.pytorch.org/whl/cu110/torch-1.7.0%2Bcu110-cp38-cp38-linux_x86_64.whl
 pip install https://download.pytorch.org/whl/cu110/torchvision-0.8.1%2Bcu110-cp38-cp38-linux_x86_64.whl
 pip install pycocotools
 pip install -r requirements.txt
 pip install jupyter
 
+# DCNv2は上記のpytorchのバージョンに対応しているため、それ以外のpytorchを入れた場合は別のDCNv2を探す必要がある
 cd src/lib/models/networks
 rm -rf DCNv2
 git clone https://github.com/MatthewHowe/DCNv2.git

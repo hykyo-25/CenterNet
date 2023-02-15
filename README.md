@@ -1,3 +1,10 @@
+# MEMO
+- このリポジトリでは、主にCenterNet\src\lib\models\networks内に変更を加えた
+- train.ipynb：学習用のノートブック
+- test.ipynb：検出精度を求めるノートブック
+- dev.ipynb：モデルの動作確認と中間層の可視化を行うノートブック
+- dataset.ipynb：COCO datasetを使用した結果の可視化を行うノートブック
+
 # Objects as Points
 Object detection, 3D detection, and pose estimation using center point detection:
 ![](readme/fig2.png)
